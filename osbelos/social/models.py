@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+
 # Modelo Post
 class Post(models.Model):
     # Definindo a chave estrangeira para o modelo de usuário padrão
@@ -15,6 +16,7 @@ class Post(models.Model):
     def __str__(self):
         return self.title
 
+
 # Modelo Like
 class Like(models.Model):
     user = models.ForeignKey(get_user_model(), related_name='likes', on_delete=models.CASCADE)
@@ -27,6 +29,7 @@ class Like(models.Model):
     def __str__(self):
         return f"{self.user.username} liked {self.post.title}"
 
+
 # Modelo Comment
 class Comment(models.Model):
     user = models.ForeignKey(get_user_model(), related_name='comments', on_delete=models.CASCADE)
@@ -36,6 +39,7 @@ class Comment(models.Model):
 
     def __str__(self):
         return f"Comment by {self.user.username} on {self.post.title}"
+
 
 # Modelo Message
 class Message(models.Model):
@@ -47,6 +51,7 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender.username} to {self.receiver.username}"
+
 
 # Modelo Follow
 class Follow(models.Model):

@@ -3,6 +3,7 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from social import views
 from social.views import LoginView, LogoutView
 
 urlpatterns = [
@@ -12,4 +13,6 @@ urlpatterns = [
     path('api/login/', LoginView.as_view(), name='login'),
     # Rota para logout (excluir o token)
     path('api/logout/', LogoutView.as_view(), name='logout'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    path('media/video/<int:post_id>/', views.serve_media, name='serve_media'),
+
+]
