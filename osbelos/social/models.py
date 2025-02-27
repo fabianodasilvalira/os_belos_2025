@@ -64,3 +64,26 @@ class Follow(models.Model):
 
     def __str__(self):
         return f"{self.follower.username} follows {self.followed.username}"
+
+
+# social/models.py (adicione abaixo do modelo Comment)
+
+class Reaction(models.Model):
+    REACTION_TYPES = [
+        ('like', 'Curtir'),
+        ('love', 'Amar'),
+        ('laugh', 'Rir'),
+        ('surprised', 'Surpreender'),
+        ('sad', 'Triste'),
+        ('angry', 'Bravo'),
+    ]
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE, related_name='reactions')
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='reactions')
+    reaction_type = models.CharField(max_length=10, choices=REACTION_TYPES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'comment', 'reaction_type')
+
+    def __str__(self):
+        return f"{self.user.username} reagiu com {self.reaction_type} no comentário {self.comment.id}"

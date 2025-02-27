@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Post, Comment, Like
+from .models import Post, Comment, Like, Reaction
 
 
 # Serializer para Curtidas
@@ -12,15 +12,22 @@ class LikeSerializer(serializers.ModelSerializer):
 
 
 # Serializer para Comentários
+from rest_framework import serializers
+from .models import Comment, Post
+
 class CommentSerializer(serializers.ModelSerializer):
-    user_name = serializers.CharField(source='user.username', default='Usuário Desconhecido')
+    post_id = serializers.IntegerField(write_only=True)  # Definido como IntegerField
 
     class Meta:
         model = Comment
-        fields = ['id', 'user_name', 'content', 'created_at']
+        fields = ["id", "post_id", "user", "content", "created_at"]
 
-    def get_created_at(self, obj):
-        return obj.created_at.strftime('%d/%m/%Y %H:%M:%S')  # Formato brasileiro
+    def create(self, validated_data):
+        post_id = validated_data.pop("post_id")
+        post = Post.objects.get(id=post_id)  # Busca o post correspondente
+        comment = Comment.objects.create(post=post, **validated_data)  # Cria o comentário associado ao post
+        return comment
+
 
 
 # Serializer para Post
@@ -44,3 +51,11 @@ class PostSerializer(serializers.ModelSerializer):
 
     def get_updated_at(self, obj):
         return obj.updated_at.strftime('%d/%m/%Y %H:%M:%S')
+
+
+# social/serializers.py
+class ReactionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Reaction
+        fields = ['id', 'user', 'comment', 'reaction_type', 'created_at']
+

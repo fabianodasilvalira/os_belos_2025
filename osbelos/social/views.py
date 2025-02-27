@@ -1,17 +1,15 @@
 from django.contrib.auth import authenticate
-from django.http import FileResponse, Http404
-from django.contrib.auth.decorators import login_required
-import os
-from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from .models import Post, Comment, Like
-from .serializers import PostSerializer, CommentSerializer
+from .models import Post, Comment, Like, Reaction
+from .serializers import PostSerializer, CommentSerializer, ReactionSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.http import Http404, FileResponse, JsonResponse
+from django.conf import settings
+from rest_framework.views import APIView
+import os
 
 
 # LOGIN (Gerar Token JWT)
@@ -132,21 +130,40 @@ class CommentViewSet(viewsets.ModelViewSet):
         return queryset
 
 
-# SERVIÇO PARA SERVIR MÍDIA (Proteção de vídeos)
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def serve_media(request, post_id):
-    try:
-        post = Post.objects.get(pk=post_id)
-        if post.video:  # Verifica se o post tem vídeo
-            file_path = os.path.join(settings.MEDIA_ROOT, post.video.name)
+class CurrentUserView(APIView):
+    permission_classes = [IsAuthenticated]  # Apenas usuários autenticados podem acessar esta rota
 
-            if os.path.exists(file_path):
-                with open(file_path, 'rb') as file:
-                    return FileResponse(file, content_type='video/mp4')
-            else:
-                raise Http404("Arquivo não encontrado!")
-        else:
-            raise Http404("Este post não contém um vídeo.")
-    except Post.DoesNotExist:
-        raise Http404("Post não encontrado.")
+    def get(self, request):
+        # Recupera o usuário autenticado
+        user = request.user
+        # Retorna os dados do usuário em formato JSON
+        return Response({
+            'id': user.id,
+            'username': user.username,
+        })
+
+
+class ReactToCommentView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, comment_id):
+        comment = Comment.objects.get(id=comment_id)
+        reaction_type = request.data.get('reaction_type')
+
+        # Verifica se o tipo de reação é válido
+        if reaction_type not in dict(Reaction.REACTION_TYPES):
+            return Response({'error': 'Reação inválida'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Verifica se o usuário já reagiu ao comentário
+        reaction, created = Reaction.objects.get_or_create(
+            user=request.user, comment=comment, reaction_type=reaction_type
+        )
+
+        # Se o usuário já tiver reagido ao comentário com o mesmo tipo, exclui a reação
+        if not created:
+            reaction.delete()
+            return Response({'message': 'Reação removida'}, status=status.HTTP_200_OK)
+
+        # Retorna a reação criada
+        serializer = ReactionSerializer(reaction)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

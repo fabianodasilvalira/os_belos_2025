@@ -4,15 +4,14 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 from social import views
-from social.views import LoginView, LogoutView
+from social.views import LoginView, LogoutView, CurrentUserView, ReactToCommentView
 
 urlpatterns = [
-    # Suas outras rotas...
     path('admin/', admin.site.urls),
-    path('api/', include('social.urls')),  # Corrigido parêntese
+    path('api/', include('social.urls')),
     path('api/login/', LoginView.as_view(), name='login'),
-    # Rota para logout (excluir o token)
     path('api/logout/', LogoutView.as_view(), name='logout'),
-    path('media/video/<int:post_id>/', views.serve_media, name='serve_media'),
+    path('api/current_user/', CurrentUserView.as_view(), name='current_user'),
+    path('api/comments/<int:comment_id>/react/', ReactToCommentView.as_view(), name='react_to_comment'),
 
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

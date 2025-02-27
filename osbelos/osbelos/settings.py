@@ -30,8 +30,8 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-MEDIA_URL = '/media/'  # URL pública para acessar arquivos de mídia
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')  # Caminho onde os arquivos são armazenados
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 SECURE_SSL_REDIRECT = False  # Força o redirecionamento de HTTP para HTTPS
 SECURE_HSTS_SECONDS = 31536000  # Define a política HTTP Strict Transport Security (HSTS)
