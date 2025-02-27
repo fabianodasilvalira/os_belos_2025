@@ -57,19 +57,31 @@ INSTALLED_APPS = [
     'social',  # Certifique-se de que este está correto
     'rest_framework',  # Django Rest Framework
     'rest_framework_simplejwt',
+    'django.contrib.sites',  # Necessário para o django-allauth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    # Se você estiver usando login social, adicione:
+    'allauth.socialaccount.providers.google',
+    'corsheaders',
 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Adicione essa linha
+    'django.middleware.common.CommonMiddleware',  # Já deve existir
+]
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Endereço do seu frontend local (Vite)
 ]
 
 
@@ -77,6 +89,12 @@ CSRF_COOKIE_SECURE = True  # Garantir que o cookie CSRF seja enviado apenas por 
 CSRF_COOKIE_HTTPONLY = True  # Impedir acesso ao cookie CSRF via JavaScript
 CSRF_TRUSTED_ORIGINS = ['https://yourdomain.com']
 
+
+AUTHENTICATION_BACKENDS = (
+    'allauth.account.auth_backends.AuthenticationBackend',
+    # outros backends, caso necessário
+)
+SITE_ID = 1
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -172,3 +190,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Para desenvolvimento, usando o backend de e-mail de console
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Para produção, configure um serviço de envio de e-mails, como o Gmail ou SendGrid:
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'seu-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'sua-senha'
+
+DEFAULT_FROM_EMAIL = 'noreply@seusite.com'
+
+
